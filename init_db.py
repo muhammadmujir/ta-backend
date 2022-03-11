@@ -35,7 +35,8 @@ cur.execute('DROP TABLE IF EXISTS users;')
 cur.execute('CREATE TABLE users (id serial PRIMARY KEY,'
                                  'name varchar (150) NOT NULL,'
                                  'age varchar (120) NOT NULL,'
-                                 'address varchar (150) NOT NULL);'
+                                 'address varchar (150) NOT NULL,'
+                                 'password varchar (150) NOT NULL);'
                                  )
 
 # Insert data into the table
@@ -57,11 +58,12 @@ cur.execute('INSERT INTO books (title, author, pages_num, review)'
              'Another great classic!')
             )
 
-cur.execute('INSERT INTO users (name, age, address)'
-            'VALUES (%s, %s, %s)',
+cur.execute('INSERT INTO users (name, age, address, password)'
+            'VALUES (%s, %s, %s, %s)',
             ('Mujir',
              '19 Tahun',
-             'Pasuruan')
+             'Pasuruan',
+             'passwordkuuuu')
             )
 
 conn.commit()

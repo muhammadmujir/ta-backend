@@ -12,14 +12,14 @@ import cv2
 import torch
 from torchvision import datasets, transforms
 from crowd_counting.inceptionresnetv2 import InceptionResNetV2
-from controllers.UserController import db
 from routes.user_bp import user_bp
+from database import Database
 
 #Initialize the Flask app
 app = Flask(__name__)
 app.config.from_object('config')
 app.register_blueprint(user_bp, url_prefix='/users')
-db.init_app(app)
+Database().db.init_app(app)
 
 # camera = cv2.VideoCapture(0)
 # if not camera.isOpened():

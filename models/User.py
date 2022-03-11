@@ -4,9 +4,10 @@ Created on Wed Mar  9 20:57:58 2022
 
 @author: Admin
 """
-from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+from database import Database
+
+db = Database().db
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -14,13 +15,21 @@ class User(db.Model):
     name = db.Column(db.String)
     age = db.Column(db.String(120))
     address = db.Column(db.String(120))
-    @property
+    password = db.Column(db.String(120))
+    
+    def __init__(self, name, age, address, password):
+        self.name = name
+        self.age = age
+        self.address = address
+        self.password = password
+        
+    def __repr__(self):
+        return '<User %r>' % self.name
+    
     def serialize(self):
         return {
             'id': self.id,
             'name': self.name,
-            'city': self.city,
-            'state': self.state,
+            'age': self.age,
             'address': self.address
         }
-
