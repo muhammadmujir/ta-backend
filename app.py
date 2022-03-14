@@ -14,12 +14,19 @@ from torchvision import datasets, transforms
 from crowd_counting.inceptionresnetv2 import InceptionResNetV2
 from routes.user_bp import user_bp
 from database import Database
+from flask_migrate import Migrate
+from models.user import User
+from models.camera import Camera
+from models.camera_owner import CameraOwner
+from models.statistic import Statistic
 
 #Initialize the Flask app
 app = Flask(__name__)
 app.config.from_object('config')
 app.register_blueprint(user_bp, url_prefix='/users')
-Database().db.init_app(app)
+db = Database().db
+db.init_app(app)
+migrate = Migrate(app, db)
 
 # camera = cv2.VideoCapture(0)
 # if not camera.isOpened():

@@ -8,7 +8,7 @@ Created on Wed Mar  9 21:01:08 2022
 import sys
 from flask import render_template, redirect, url_for, request, abort, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
-from models.User import User, db
+from models.user import User, db
 from jwt_token import token_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import SECRET_KEY

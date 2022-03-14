@@ -5,7 +5,7 @@ Created on Fri Mar 11 17:21:16 2022
 @author: Admin
 """
 from flask import Flask, request, jsonify
-from models.User import User
+from models.user import User
 from functools import wraps
 import jwt
 from config import SECRET_KEY
