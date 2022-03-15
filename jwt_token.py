@@ -24,7 +24,8 @@ def token_required(f):
         
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            current_user = User.query.filter_by(id=data['id']).first()
+            # current_user = User.query.filter_by(id=data['id']).first()
+            current_user = data['id']
         except jwt.ExpiredSignatureError:
             return 'Signature expired. Please log in again.'
         except:

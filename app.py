@@ -6,7 +6,7 @@ Created on Wed Oct  6 20:35:23 2021
 """
 
 #Import necessary libraries
-from flask import Flask, render_template, Response, request
+from flask import Flask, render_template, Response, request, jsonify
 from multiprocessing import Process
 import cv2
 import torch
@@ -19,11 +19,13 @@ from models.user import User
 from models.camera import Camera
 from models.camera_owner import CameraOwner
 from models.statistic import Statistic
+from responses.exceptions.exception import exception_bp
 
 #Initialize the Flask app
 app = Flask(__name__)
 app.config.from_object('config')
-app.register_blueprint(user_bp, url_prefix='/users')
+app.register_blueprint(user_bp)
+app.register_blueprint(exception_bp)
 db = Database().db
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -83,6 +85,11 @@ def shutdown_server():
 def shutdown():
     shutdown_server()
     return 'Server shutting down...'
+
+@app.errorhandler(404)
+def handle_404_error(err):
+    response = {"code": 404, "status": "Not Found", "data": None, "errors": ["Not Found"]}
+    return jsonify(response), 404
 
 if __name__ == "__main__":
     app.run(debug=True)

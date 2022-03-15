@@ -15,5 +15,7 @@ DEBUG = True
 SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:root@localhost:5432/ta_crowd_counting'
 # Turn off the Flask-SQLAlchemy event system and warning
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+# disable json keys sorting
+JSON_SORT_KEYS = False
 # JWT
 SECRET_KEY = '004f2af45d3a4e161a7dd2d17fdae47f'

@@ -14,8 +14,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from config import SECRET_KEY
 import jwt
 import datetime
+from responses.exceptions.exception import APIAuthError
 
 def index():
+    raise APIAuthError('Missing email value')
     return jsonify([e.serialize() for e in User.query.all()])
 def store():
     db.session.add(User(name="mujir", age="24", address="pasuruan"))
@@ -53,7 +55,7 @@ def login():
      
     if check_password_hash(user.password, auth['password']):
 
-        token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, SECRET_KEY, "HS256")
+        token = jwt.encode({'id' : user, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, SECRET_KEY, "HS256")
         return jsonify({'token' : token}) 
 
     return make_response('could not verify',  401, {'Authentication': '"login required"'})
