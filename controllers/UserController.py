@@ -16,6 +16,7 @@ from config import SECRET_KEY
 import jwt
 import datetime
 from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized
+from utils.validation import validateEmpty, validateEmail
 
 def index():
     # raise BadRequest("error1")
@@ -27,8 +28,9 @@ def store():
     return "user"
 
 @token_required
-def show(user):
-    return jsonify(User.query.filter_by(id=user.id).first().serialize())
+@api_call
+def show(userId):
+    return User.query.filter_by(id=userId).first().serialize()
 
 def update(userId):
     return "user"
@@ -38,7 +40,15 @@ def delete(userId):
 
 @api_call
 def register():  
-    data = request.get_json()  
+    data = request.get_json() 
+    emptyFields = validateEmpty(name=data['name'], email=data['email'], password=data['password'])
+    if len(emptyFields) > 0:
+        raise BadRequest([field+" is empty" for field in emptyFields])
+    if not validateEmail(data['email']):
+        raise BadRequest("Wrong email format")
+    emailExist = User.query.filter_by(email=data['email']).first()
+    if (emailExist is not None):
+        raise BadRequest("user already exists")
     hashed_password = generate_password_hash(data['password'], method='sha256')
  
     new_user = User(name=data['name'], email=data['email'], password=hashed_password, role=2, picture=None) 
@@ -47,18 +57,18 @@ def register():
 
     return new_user.serializeWithoutIdAndRole()
 
+@api_call
 def login():
     auth = request.get_json() 
 
-    if not auth or not auth['username'] or not auth['password']:  
-        return make_response('could not verify', 401, {'Authentication': 'login required"'})    
+    if not auth or not auth['email'] or not auth['password']: 
+        raise Unauthorized("email and password are empty")
 
-    user = User.query.filter_by(name=auth['username']).first()   
-     
+    user = User.query.filter_by(email=auth['email']).first()   
+    if user is None:
+        raise Unauthorized("email has not registered yet")
     if check_password_hash(user.password, auth['password']):
-
-        token = jwt.encode({'id' : user, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, SECRET_KEY, "HS256")
-        return jsonify({'token' : token}) 
-
-    return make_response('could not verify',  401, {'Authentication': '"login required"'})
-    return "user"
+        token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=2)}, SECRET_KEY, "HS256")
+        return {'token' : token}
+    else :
+        raise Unauthorized("wrong password")

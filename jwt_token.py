@@ -9,6 +9,7 @@ from models.user import User
 from functools import wraps
 import jwt
 from config import SECRET_KEY
+from werkzeug.exceptions import Unauthorized
 
 def token_required(f):
     @wraps(f)
@@ -20,16 +21,15 @@ def token_required(f):
             token = request.headers['Authorization'].split(" ")[1]
 
         if not token:
-            return jsonify({'message': 'a valid token is missing'})
+            raise Unauthorized("a valid token is missing")
         
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            # current_user = User.query.filter_by(id=data['id']).first()
             current_user = data['id']
         except jwt.ExpiredSignatureError:
-            return 'Signature expired. Please log in again.'
+            raise Unauthorized("Token is expired")
         except:
-            return jsonify({'message': 'token is invalid'})
+            raise Unauthorized("Token is invalid")
 
         return f(current_user, *args, **kwargs)
     return decorator
