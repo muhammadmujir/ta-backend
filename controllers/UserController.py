@@ -10,14 +10,16 @@ from flask import render_template, redirect, url_for, request, abort, jsonify, m
 from flask_sqlalchemy import SQLAlchemy
 from models.user import User, db
 from jwt_token import token_required
+from responses.api_call import api_call
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import SECRET_KEY
 import jwt
 import datetime
-from responses.exceptions.exception import APIAuthError
+from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized
 
 def index():
-    raise APIAuthError('Missing email value')
+    # raise BadRequest("error1")
+    # raise BadRequest(["error1", "error2"])
     return jsonify([e.serialize() for e in User.query.all()])
 def store():
     db.session.add(User(name="mujir", age="24", address="pasuruan"))
@@ -34,16 +36,16 @@ def update(userId):
 def delete(userId):
     return "user"
 
+@api_call
 def register():  
     data = request.get_json()  
-
     hashed_password = generate_password_hash(data['password'], method='sha256')
  
-    new_user = User(name=data['name'], age=data['age'], address=data['address'], password=hashed_password) 
+    new_user = User(name=data['name'], email=data['email'], password=hashed_password, role=2, picture=None) 
     db.session.add(new_user)  
     db.session.commit()    
 
-    return jsonify({'message': 'registeration successfully'})
+    return new_user.serializeWithoutIdAndRole()
 
 def login():
     auth = request.get_json() 

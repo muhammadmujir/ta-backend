@@ -5,13 +5,12 @@ Created on Wed Mar  9 20:57:58 2022
 @author: Admin
 """
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 from database import Database
+from models.camera_owner import CameraOwner
 
 db = Database().db
-Base = declarative_base()
 
-class User(db.Model,Base):
+class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -19,7 +18,7 @@ class User(db.Model,Base):
     password = db.Column(db.String, nullable=False)
     role = db.Column(db.SmallInteger, nullable=False)
     picture = db.Column(db.String, nullable=True)
-    children = relationship("camera_owners")
+    camera_owners = relationship("CameraOwner")
     
     def __init__(self, name, email, password, role, picture):
         self.name = name
@@ -37,5 +36,12 @@ class User(db.Model,Base):
             'name': self.name,
             'email': self.email,
             'role': self.role,
+            'picture': self.picture
+        }
+    
+    def serializeWithoutIdAndRole(self):
+        return {
+            'name': self.name,
+            'email': self.email,
             'picture': self.picture
         }

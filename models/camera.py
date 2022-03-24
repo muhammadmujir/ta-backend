@@ -7,12 +7,10 @@ Created on Mon Mar 14 10:56:59 2022
 
 from database import Database
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 
 db = Database().db
-Base = declarative_base()
 
-class Camera(db.Model,Base):
+class Camera(db.Model):
     __tablename__ = 'cameras'
     id = db.Column(db.Integer, primary_key=True)
     rtsp_address = db.Column(db.String, unique=True, nullable=False)
@@ -23,7 +21,8 @@ class Camera(db.Model,Base):
     is_active = db.Column(db.Boolean, nullable=False)
     is_public = db.Column(db.Boolean, nullable=False)
     picture = db.Column(db.String, nullable=True)
-    children = relationship(["camera_owners", "statistics"])
+    camera_owners = relationship("CameraOwner")
+    statistics = relationship("Statistic")
     
     def __init__(self, rtsp_address, location, description, area, max_crowd_count, is_active, is_public, picture):
         self.rtsp_address = rtsp_address
