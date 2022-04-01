@@ -20,6 +20,9 @@ from models.camera import Camera
 from models.camera_owner import CameraOwner
 from models.statistic import Statistic
 from responses.exceptions.exception import exception_bp
+import numpy as np
+import PIL.Image as Image
+from matplotlib import cm
 
 #Initialize the Flask app
 app = Flask(__name__)
@@ -30,20 +33,20 @@ db = Database().db
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture("G:\\videoplayback.mp4")
 # if not camera.isOpened():
 #     print("Cannot open camera")
-#     exit()
     
 #init model
-# model = InceptionResNetV2().cpu()
-# checkpoint = torch.load("G:\\Dataset\\Result\\0model_best.pth.tar")
-# model.load_state_dict(checkpoint['state_dict'])
-# transform=transforms.Compose([
-#                       transforms.ToTensor(),transforms.Normalize(
-#                           mean=[0.485, 0.456, 0.406],
-#                           std=[0.229, 0.224, 0.225]),
-#                   ])
+model = InceptionResNetV2().cpu()
+checkpoint = torch.load("G:\\Dataset\\Result\\0model_best.pth.tar")
+model.load_state_dict(checkpoint['state_dict'])
+transform=transforms.Compose([
+                      transforms.ToTensor(),transforms.Normalize(
+                          mean=[0.485, 0.456, 0.406],
+                          std=[0.229, 0.224, 0.225]),
+                  ])
+
 
 def gen_frame():
     while True:
@@ -51,13 +54,15 @@ def gen_frame():
         if not success:
             break
         else:
+            im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            im = Image.fromarray(np.uint8(np.array(im)))
+            im = transform(im).cpu()
+            # im.save("C:\\Users\\Admin\\Desktop\\TA\\Dataset\\UCF-QNRF_ECCV18\\Test\\debug\\coba.jpg")
+            # calculate crowd count
+            output = model(im.unsqueeze(0))
+            print("Predicted Count : ",int(output.detach().cpu().sum().numpy()))
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
-            # calculate crowd count
-            # output = model(frame.unsqueeze(0))
-            # prediction = output.detach().cpu()
-            
-            # concat frame one by one and show result
             yield(b'--frame\r\n'
                   b'Content-Type: image/jpeg\r\n\r\n'+frame+b'\r\n')
 
@@ -67,7 +72,7 @@ def index():
 
 @app.route('/video_feed')
 def video_feed():
-    camera = cv2.VideoCapture(0)
+    # camera = cv2.VideoCapture(0)
     return Response(gen_frame(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/video_stop')
