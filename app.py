@@ -23,6 +23,7 @@ from responses.exceptions.exception import exception_bp
 import numpy as np
 import PIL.Image as Image
 from matplotlib import cm
+import time
 
 #Initialize the Flask app
 app = Flask(__name__)
@@ -49,18 +50,22 @@ transform=transforms.Compose([
 
 
 def gen_frame():
+    delay = 60 # 1 minute
+    start = time.time()
     while True:
         success, frame = camera.read()
         if not success:
             break
         else:
-            im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            im = Image.fromarray(np.uint8(np.array(im)))
-            im = transform(im).cpu()
-            # im.save("C:\\Users\\Admin\\Desktop\\TA\\Dataset\\UCF-QNRF_ECCV18\\Test\\debug\\coba.jpg")
-            # calculate crowd count
-            output = model(im.unsqueeze(0))
-            print("Predicted Count : ",int(output.detach().cpu().sum().numpy()))
+            if (time.time() - start >= delay):
+                im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                im = Image.fromarray(np.uint8(np.array(im)))
+                im = transform(im).cpu()
+                # im.save("C:\\Users\\Admin\\Desktop\\TA\\Dataset\\UCF-QNRF_ECCV18\\Test\\debug\\coba.jpg")
+                # calculate crowd count
+                output = model(im.unsqueeze(0))
+                print("Predicted Count : ",int(output.detach().cpu().sum().numpy()))
+                start = time.time()
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
             yield(b'--frame\r\n'
