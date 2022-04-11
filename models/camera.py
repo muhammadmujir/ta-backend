@@ -37,8 +37,8 @@ class Camera(db.Model):
     def __repr__(self):
         return '<Camera %r>' % self.rtsp_address
     
-    def serialize(self):
-        return {
+    def serialize(self, exclude = None):
+        response = {
             'id': self.id,
             'rtspAddress': self.rtsp_address,
             'location': self.location,
@@ -49,3 +49,7 @@ class Camera(db.Model):
             'isPublic': self.is_public,
             'picture': self.picture
         }
+        if (isinstance(exclude, list)):
+            for key in exclude:
+                del response[key]
+        return response

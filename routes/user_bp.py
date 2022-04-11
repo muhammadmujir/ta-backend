@@ -15,6 +15,7 @@ user_bp.route('/create', methods=['GET'])(store)
 user_bp.route('/_currentUser', methods=['GET'])(show)
 user_bp.route('/<int:user_id>/edit', methods=['POST'])(update)
 user_bp.route('/<int:user_id>', methods=['DELETE'])(delete)
+user_bp.route('/<user_id>/<name>', methods=['GET'])(userDetail)
 # auth
 user_bp.route('/_register', methods=['POST'])(register)
 user_bp.route('/_login', methods=['POST'])(login)

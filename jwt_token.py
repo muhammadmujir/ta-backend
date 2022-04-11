@@ -11,6 +11,11 @@ import jwt
 from config import SECRET_KEY
 from werkzeug.exceptions import Unauthorized
 
+class TokenContent():
+    def __init__(self, userId, userRole):
+        self.userId = userId
+        self.userRole = userRole
+        
 def token_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
@@ -25,7 +30,7 @@ def token_required(f):
         
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            current_user = data['id']
+            current_user = TokenContent(data['id'], data['role'])
         except jwt.ExpiredSignatureError:
             raise Unauthorized("Token is expired")
         except:

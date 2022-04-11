@@ -6,6 +6,13 @@ Created on Thu Mar 24 09:39:00 2022
 """
 import re
 
+def validateMissingJsonField(json, keys):
+    missingList = []
+    for key in keys:
+        if not key in json:
+            missingList.append(key)
+    return missingList, len(missingList) > 0
+
 def validateEmpty(**data):
     emptyList = []
     for key, value in data.items():

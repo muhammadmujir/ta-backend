@@ -12,7 +12,7 @@ db = Database().db
 class CameraOwner(db.Model):
     __tablename__ = 'camera_owners'
     id = db.Column(db.Integer, primary_key=True)
-    camera_id = db.Column(db.Integer, db.ForeignKey('cameras.id'))
+    camera_id = db.Column(db.Integer, db.ForeignKey('cameras.id', onupdate="CASCADE", ondelete="CASCADE"))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     
     def __init__(self, camera_id, user_id):

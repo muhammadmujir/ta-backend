@@ -13,6 +13,8 @@ import torch
 from torchvision import datasets, transforms
 from crowd_counting.inceptionresnetv2 import InceptionResNetV2
 from routes.user_bp import user_bp
+from routes.camera_bp import camera_bp
+from routes.static_bp import static_bp
 from database import Database
 from flask_migrate import Migrate
 from models.user import User
@@ -31,7 +33,9 @@ from threading import Lock
 app = Flask(__name__)
 app.config.from_object('config')
 app.register_blueprint(user_bp)
+app.register_blueprint(camera_bp)
 app.register_blueprint(exception_bp)
+app.register_blueprint(static_bp)
 db = Database().db
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -77,13 +81,13 @@ def gen_frame():
             yield(b'--frame\r\n'
                   b'Content-Type: image/jpeg\r\n\r\n'+frame+b'\r\n')
 
-@app.route('/')
-def index():
-    return render_template('websocket.html', async_mode=async_mode)
-
 # @app.route('/')
 # def index():
-#     return render_template('index.html')
+#     return render_template('websocket.html', async_mode=async_mode)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/video_feed')
 def video_feed():

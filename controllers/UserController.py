@@ -21,7 +21,19 @@ from utils.validation import validateEmpty, validateEmail
 def index():
     # raise BadRequest("error1")
     # raise BadRequest(["error1", "error2"])
+    # to get query -> request.args.get('key')
+    return request.args.get('user_id')
     return jsonify([e.serialize() for e in User.query.all()])
+
+def userDetail(user_id, name):
+    if (request.args.get('query')):
+        print("masuk pertama")
+    else:
+        print("masuk kedua")
+    return request.args.get('query')
+    return user_id
+    return request.view_args.get('user_id')
+
 def store():
     db.session.add(User(name="mujir", age="24", address="pasuruan"))
     db.session.commit()
@@ -29,8 +41,8 @@ def store():
 
 @token_required
 @api_call
-def show(userId):
-    return User.query.filter_by(id=userId).first().serialize()
+def show(tokenContent):
+    return User.query.filter_by(id=tokenContent.userId).first().serialize()
 
 def update(userId):
     return "user"
@@ -68,7 +80,7 @@ def login():
     if user is None:
         raise Unauthorized("email has not registered yet")
     if check_password_hash(user.password, auth['password']):
-        token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=2)}, SECRET_KEY, "HS256")
+        token = jwt.encode({'id' : user.id, 'role': user.role, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=2)}, SECRET_KEY, "HS256")
         return {'token' : token}
     else :
         raise Unauthorized("wrong password")
