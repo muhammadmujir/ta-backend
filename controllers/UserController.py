@@ -12,11 +12,12 @@ from models.user import User, db
 from jwt_token import token_required
 from responses.api_call import api_call
 from werkzeug.security import generate_password_hash, check_password_hash
-from config import SECRET_KEY
+from config import SECRET_KEY, UPLOAD_FOLDER_USER
 import jwt
-import datetime
+from datetime import datetime, timedelta
 from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized
 from utils.validation import validateEmpty, validateEmail
+from utils.util import *
 
 def index():
     # raise BadRequest("error1")
@@ -34,18 +35,50 @@ def userDetail(user_id, name):
     return user_id
     return request.view_args.get('user_id')
 
-def store():
-    db.session.add(User(name="mujir", age="24", address="pasuruan"))
-    db.session.commit()
-    return "user"
 
 @token_required
 @api_call
 def show(tokenContent):
     return User.query.filter_by(id=tokenContent.userId).first().serialize()
 
-def update(userId):
-    return "user"
+@token_required
+@api_call
+def updateUser(token):
+    user = User.query.filter_by(id=token.userId).first()
+    isUpdated = False
+    data = request.get_json()
+    if 'name' in data:
+        user.name = data['name']
+        isUpdated = True
+    if 'oldPassword' and 'newPassword' in data:
+        if check_password_hash(user.password, data['oldPassword']):
+            user.password = generate_password_hash(data['newPassword'], method='sha256')
+            isUpdated = True
+        else:
+            raise BadRequest("Old Password Not Match")
+    if isUpdated:
+        db.session.commit()
+        return user.serialize()
+    raise BadRequest("Empty Request Body")
+
+@token_required
+@api_call
+def uploadUserPicture(token):
+    if 'file' not in request.files:
+        raise BadRequest("No file part")
+    file = request.files['file']
+    if file.filename == '':
+        raise BadRequest("No selected file")
+    if file and allowedFile(file.filename):
+        filename = str(token.userId)+"."+file.filename.rsplit('.', 1)[1]
+        file.save(os.path.join(UPLOAD_FOLDER_USER, filename))
+        return "Upload Success"
+    raise BadRequest("File Extension Not Supported")
+
+
+def getUserPicture(userId):
+    ext =  getFileExtension(cameraId)
+    return send_from_directory(UPLOAD_FOLDER_USER, str(userId)+"."+ext)    
 
 def delete(userId):
     return "user"
@@ -80,7 +113,7 @@ def login():
     if user is None:
         raise Unauthorized("email has not registered yet")
     if check_password_hash(user.password, auth['password']):
-        token = jwt.encode({'id' : user.id, 'role': user.role, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=2)}, SECRET_KEY, "HS256")
+        token = jwt.encode({'id' : user.id, 'role': user.role, 'exp' : datetime.utcnow() + timedelta(days=2)}, SECRET_KEY, "HS256")
         return {'token' : token}
     else :
         raise Unauthorized("wrong password")

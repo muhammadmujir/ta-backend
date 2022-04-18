@@ -13,16 +13,79 @@ from flask_sqlalchemy import SQLAlchemy
 from models.user import User, db
 from models.camera import Camera
 from models.camera_owner import CameraOwner
+from models.statistic import Statistic
 from jwt_token import token_required
 from responses.api_call import api_call
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from config import SECRET_KEY, UPLOAD_FOLDER
+from config import SECRET_KEY, UPLOAD_FOLDER_CAMERA, SQLALCHEMY_DATABASE_URI
 import jwt
 import datetime
 from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized, Forbidden
 from utils.validation import validateEmpty, validateEmail, validateMissingJsonField
+from utils.util import getCurrentStrDate
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+import random
+from torchvision import datasets, transforms
+from crowd_counting.inceptionresnetv2 import InceptionResNetV2
+import cv2
+import torch
+import time
+import PIL.Image as Image
+import numpy as np
+from datetime import datetime
+import functools
+from application import Application
 
+# init model
+model = InceptionResNetV2().cpu()
+checkpoint = torch.load("D:\\TA\\Dataset\\Result\\0model_best.pth.tar")
+model.load_state_dict(checkpoint['state_dict'])
+transform=transforms.Compose([
+                      transforms.ToTensor(),transforms.Normalize(
+                          mean=[0.485, 0.456, 0.406],
+                          std=[0.229, 0.224, 0.225]),
+                  ])
+app = Application().app
+scheduler = Application().scheduler
+
+def crowdCounting(cameraId):
+    with app.app_context():
+        camera = cv2.VideoCapture(Camera.query.filter_by(id=cameraId).first().rtsp_address)
+        # camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
+        crowd = 0
+        iteration = 5
+        for i in range(iteration):
+            success, frame = camera.read()
+            if not success:
+                break
+            else:
+                im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                im = Image.fromarray(np.uint8(np.array(im)))
+                im = transform(im).cpu()
+                # im.save("C:\\Users\\Admin\\Desktop\\TA\\Dataset\\UCF-QNRF_ECCV18\\Test\\debug\\coba.jpg")
+                # calculate crowd count
+                output = model(im.unsqueeze(0))
+                crowd = crowd + output.detach().cpu().sum().numpy()
+                if i == iteration-1:
+                    crowd = crowd / iteration
+                    new_statistic = Statistic(cameraId, getCurrentStrDate(), crowd)
+                    db.session.add(new_statistic)
+                    db.session.commit()
+        
+def schedule(cameraId, isAddJob = True):
+    cameraId = str(cameraId)
+    # scheduler.start()
+    if isAddJob:
+        if scheduler.get_job(cameraId) == None:
+            minute = random.random() * 59
+            scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute=minute, id=cameraId, args=[cameraId])
+    else:
+        if scheduler.get_job(cameraId):
+            scheduler.remove_job(cameraId)
+    scheduler.print_jobs()
+    
 @token_required
 @api_call
 def createCamera(token):
@@ -54,6 +117,8 @@ def createCamera(token):
         new_camera_owner = CameraOwner(new_camera.id, token.userId)
         db.session.add(new_camera_owner)
         db.session.commit()
+        if data['isActive']:
+            schedule(new_camera.id, True)
         return new_camera.serialize()
     else:
         raise Forbidden(description = "You Are Not Allowed To Create Camera")
@@ -62,6 +127,8 @@ def createCamera(token):
 @api_call
 def updateCamera(token, cameraId):
     if (token.userRole == 1):
+        if CameraOwner.query.filter_by(user_id=token.userId).filter_by(camera_id=cameraId).first() == None:
+            raise Forbidden(description = "You Are Not Allowed To Edit Camera")
         data = request.get_json()
         missingList, isMissing = validateMissingJsonField(data, ['rtspAddress', 'location', 'area', 'maxCrowdCount', 'isActive', 'isPublic'])
         if (isMissing):
@@ -80,6 +147,10 @@ def updateCamera(token, cameraId):
         camera.is_active = data['isActive']
         camera.is_public = data['isPublic']
         db.session.commit()
+        if data['isActive']:
+            schedule(camera.id, True)
+        else:
+            schedule(camera.id, False)
         return camera.serialize()
     else:
         raise Forbidden(description = "You Are Not Allowed To Edit Camera")
@@ -88,12 +159,14 @@ def updateCamera(token, cameraId):
 @api_call
 def deleteCamera(token, cameraId):
     if (token.userRole == 1):
+        if CameraOwner.query.filter_by(user_id=token.userId).filter_by(camera_id=cameraId).first() == None:
+            raise Forbidden(description = "You Are Not Allowed To Delete Camera")
         deletedRows = Camera.query.filter_by(id=cameraId).delete()
         if deletedRows > 0:
             db.session.commit()
             ext = getFileExtension(cameraId)
             if ext != None:
-                os.remove(os.path.join(UPLOAD_FOLDER, cameraId+"."+ext))
+                os.remove(os.path.join(UPLOAD_FOLDER_CAMERA, cameraId+"."+ext))
         else:
             raise BadRequest("Camera Not Found")
         return "Delete Successfull"
@@ -116,22 +189,23 @@ def uploadCameraPicture(token, cameraId):
         if file and allowedFile(file.filename):
             filename = str(cameraId)+"."+file.filename.rsplit('.', 1)[1]
             # filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-            # return str(os.path.join(UPLOAD_FOLDER, filename))
+            file.save(os.path.join(UPLOAD_FOLDER_CAMERA, filename))
+            # return str(os.path.join(UPLOAD_FOLDER_CAMERA, filename))
             return "Upload Success"
+        raise BadRequest("File Extension Not Supported")
     else:
         raise Forbidden(description = "You Are Not Allowed To Edit Camera")
 
 
 def getFileExtension(cameraId):
-    filenames = glob.glob(os.path.join(UPLOAD_FOLDER, str(cameraId)+".*"))
+    filenames = glob.glob(os.path.join(UPLOAD_FOLDER_CAMERA, str(cameraId)+".*"))
     if len(filenames) == 0:
         return None
     return filenames[0].rsplit('.', 1)[1]
 
 def getCameraPicture(cameraId):
     ext =  getFileExtension(cameraId)
-    return send_from_directory(UPLOAD_FOLDER, str(cameraId)+"."+ext)    
+    return send_from_directory(UPLOAD_FOLDER_CAMERA, str(cameraId)+"."+ext)    
 
 @api_call
 def getPublicCameraList():
@@ -158,5 +232,13 @@ def getOwnerCameraList(token):
             query = query.filter(Camera.is_public == False)
     return [row.serialize() for row in query.all()]
 
-def getCameraDetail():
-    return "camera"
+@token_required
+@api_call
+def getCameraDetail(token, cameraId):
+    camera = Camera.query.filter_by(id=cameraId).first()
+    if camera == None:
+        raise BadRequest("Camera Not Found")
+    if not camera.is_public:
+        if not CameraOwner.query.filter_by(camera_id=cameraId, user_id=token.userId).first():
+            raise Forbidden(description = "You Are Not Allowed To Access Camera")
+    return camera.serialize()
