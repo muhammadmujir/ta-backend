@@ -44,10 +44,11 @@ db = Database().db
 db.init_app(app)
 migrate = Migrate(app, db)
 async_mode = None
-socketio = SocketIO(app, async_mode=async_mode)
-thread = dict()
-thread_lock = Lock()
-Application().scheduler.start()
+# socketio = SocketIO(app, async_mode=async_mode)
+# thread = dict()
+# thread_lock = Lock()
+socketio = Application().socketio
+# Application().scheduler.start()
 
 # camera = cv2.VideoCapture(0)
 # if not camera.isOpened():
@@ -86,13 +87,13 @@ Application().scheduler.start()
 #             yield(b'--frame\r\n'
 #                   b'Content-Type: image/jpeg\r\n\r\n'+frame+b'\r\n')
 
-# @app.route('/')
-# def index():
-#     return render_template('websocket.html', async_mode=async_mode)
-
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('websocket.html', async_mode=async_mode)
+
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
 
 # @app.route('/video_feed')
 # def video_feed():
@@ -120,77 +121,77 @@ def handle_404_error(err):
     response = {"code": 404, "status": "Not Found", "data": None, "errors": ["Not Found"]}
     return jsonify(response), 404
 
-def calculate_crowd_counting(message):
-    start = time.time()
-    while True:
-        socketio.sleep(3)
-        # with app.app_context():
-        #     socketio.emit('my_response', {'data': message['data'], 'count': session.get('receive_count', 0) }, namespace='/test')
-        with app.test_request_context('/'):
-            session['receive_count'] = session.get('receive_count', 0) + 1
-            socketio.emit('my_response', {'data': message['data'], 'count': session.get('receive_count', 0) }, namespace='/test', room=message['data'])
-        # if (time.time() - start == 30):
-        #     session['receive_count'] = session.get('receive_count', 0) + 1
-        #     emit('my_response',
-        #           {'data': 'Streaming', 'count': session['receive_count']})
-        #     start = time.time()
+# def calculate_crowd_counting(message):
+#     start = time.time()
+#     while True:
+#         socketio.sleep(3)
+#         # with app.app_context():
+#         #     socketio.emit('my_response', {'data': message['data'], 'count': session.get('receive_count', 0) }, namespace='/test')
+#         with app.test_request_context('/'):
+#             session['receive_count'] = session.get('receive_count', 0) + 1
+#             socketio.emit('my_response', {'data': message['data'], 'count': session.get('receive_count', 0) }, namespace='/test', room=message['data'])
+#         # if (time.time() - start == 30):
+#         #     session['receive_count'] = session.get('receive_count', 0) + 1
+#         #     emit('my_response',
+#         #           {'data': 'Streaming', 'count': session['receive_count']})
+#         #     start = time.time()
         
-        # if (session.get('receive_count', 0) > 10):
-        #     break
+#         # if (session.get('receive_count', 0) > 10):
+#         #     break
         
-@socketio.on('my_event', namespace='/test')
-def test_message(message):
-    global thread
-    join_room(message['data'])
-    # with thread_lock:
-    #     # print("masuk event")
-    #     if thread is None:
-    #         thread = socketio.start_background_task(calculate_crowd_counting(message))
-    # thread_lock.acquire()
-    if not message['data'] in thread.keys():
-        thread[message['data']] = socketio.start_background_task(calculate_crowd_counting(message))
-    # thread_lock.release()
-    # session['receive_count'] = session.get('receive_count', 0) + 1
-    # emit('my_response',
-    #       {'data': message['data'], 'count': session['receive_count']})
+# @socketio.on('my_event', namespace='/test')
+# def test_message(message):
+#     global thread
+#     join_room(message['data'])
+#     # with thread_lock:
+#     #     # print("masuk event")
+#     #     if thread is None:
+#     #         thread = socketio.start_background_task(calculate_crowd_counting(message))
+#     # thread_lock.acquire()
+#     if not message['data'] in thread.keys():
+#         thread[message['data']] = socketio.start_background_task(calculate_crowd_counting(message))
+#     # thread_lock.release()
+#     # session['receive_count'] = session.get('receive_count', 0) + 1
+#     # emit('my_response',
+#     #       {'data': message['data'], 'count': session['receive_count']})
 
-@socketio.on('join', namespace='/test')
-def join():
-    print("berhasil join")
-    join_room("mujir", namespace='/test')
+# @socketio.on('join', namespace='/test')
+# def join():
+#     print("berhasil join")
+#     join_room("mujir", namespace='/test')
 
-@socketio.on('leave', namespace='/test')
-def leave():
-    print("berhasil leave")
-    leave_room("mujir", namespace='/test')
+# @socketio.on('leave', namespace='/test')
+# def leave():
+#     print("berhasil leave")
+#     leave_room("mujir", namespace='/test')
     
-@socketio.on('my_broadcast_event', namespace='/test')
-def test_broadcast_message(message):
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': message['data'], 'count': session['receive_count']},
-         broadcast=True)
+# @socketio.on('my_broadcast_event', namespace='/test')
+# def test_broadcast_message(message):
+#     session['receive_count'] = session.get('receive_count', 0) + 1
+#     emit('my_response',
+#           {'data': message['data'], 'count': session['receive_count']},
+#           broadcast=True)
 
 
-@socketio.on('connect', namespace='/test')
-def connect():
-    # global thread
-    # with thread_lock:
-    #     if thread is None:
-    #         thread = socketio.start_background_task(calculate_crowd_counting)
-    emit('my_response',
-          {'data': 'Connected', 'count': session.get('receive_count', 0)})
+# @socketio.on('connect', namespace='/test')
+# def connect():
+#     # global thread
+#     # with thread_lock:
+#     #     if thread is None:
+#     #         thread = socketio.start_background_task(calculate_crowd_counting)
+#     emit('my_response',
+#           {'data': 'Connected', 'count': session.get('receive_count', 0)})
     
-@socketio.on('disconnect_request', namespace='/test')
-def disconnect_request():
-    @copy_current_request_context
-    def can_disconnect():
-        disconnect()
+# @socketio.on('disconnect_request', namespace='/test')
+# def disconnect_request():
+#     @copy_current_request_context
+#     def can_disconnect():
+#         disconnect()
 
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': 'Disconnected!', 'count': session['receive_count']},
-         callback=can_disconnect)
+#     session['receive_count'] = session.get('receive_count', 0) + 1
+#     emit('my_response',
+#           {'data': 'Disconnected!', 'count': session['receive_count']},
+#           callback=can_disconnect)
 
 # from apscheduler.schedulers.background import BackgroundScheduler
 # from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -223,4 +224,5 @@ def disconnect_request():
 
 if __name__ == "__main__":
     # app.run(debug=True)
+    from controllers.CameraStreamingController import *
     socketio.run(app, ssl_context=None, debug=True)

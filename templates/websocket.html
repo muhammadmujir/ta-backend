@@ -7,7 +7,7 @@
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function() {
 
-            namespace = '/test';
+            namespace = '/camera';
             var socket = io(namespace);
 
             socket.on('connect', function() {
@@ -27,12 +27,12 @@
                 socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
                 return false;
             });
-            $('form#join').submit(function(event) {
-                socket.emit('join');
+            $('form#join_form').submit(function(event) {
+                socket.emit('join', {id: $('#join_data').val()});
                 return false;
             });
-            $('form#leave').submit(function(event) {
-                socket.emit('leave');
+            $('form#leave_form').submit(function(event) {
+                socket.emit('leave', {id: $('#leave_data').val()});
                 return false;
             });
             $('form#disconnect').submit(function(event) {
@@ -53,12 +53,13 @@
         <input type="text" name="broadcast_data" id="broadcast_data" placeholder="Message">
         <input type="submit" value="Send Broadcast Message">
     </form>
-
-    <form id="join" method="POST" action="#">
+    <form id="join_form" method="POST" action='#'>
+        <input type="text" name="join_data" id="join_data" placeholder="Room">
         <input type="submit" value="Join Room">
     </form>
-    <form id="leave" method="POST" action="#">
-        <input type="submit" value="Leave Room">
+    <form id="leave_form" method="POST" action='#'>
+        <input type="text" name="leave_data" id="leave_data" placeholder="Room">
+        <input type="submit" value="Leave">
     </form>
     
     <form id="disconnect" method="POST" action="#">

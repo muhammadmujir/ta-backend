@@ -1,0 +1,157 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 18 23:27:17 2022
+
+@author: Admin
+"""
+from flask import Blueprint
+from application import Application
+from threading import Lock
+from flask import copy_current_request_context
+from flask_socketio import emit, disconnect, join_room, leave_room
+import time
+import cv2
+import PIL.Image as Image
+import numpy as np
+from crowd_counting.crowd_counting import *
+from flask_socketio import rooms
+
+# socketio_bp = Blueprint('socket_bp', __name__)
+app = Application().app
+socketio = Application().socketio
+thread = dict()
+workers = dict()
+thread_lock = Lock()
+
+class Worker(object):
+    
+    isContinue = False
+    
+    def __init__(self, data):
+        self.isContinue = True
+        self.data = data
+        self.clientCount = 0
+        
+    def doWork(self):
+        with app.test_request_context('/'):
+            camera = cv2.VideoCapture(data['rtspAddress'])
+            # camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
+            while self.isContinue:
+                socketio.sleep(5)
+                success, frame = camera.read()
+                if not success:
+                    break
+                else:
+                    im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    im = Image.fromarray(np.uint8(np.array(im)))
+                    im = transform(im).cpu()
+                    # im.save("C:\\Users\\Admin\\Desktop\\TA\\Dataset\\UCF-QNRF_ECCV18\\Test\\debug\\coba.jpg")
+                    # calculate crowd count
+                    output = model(im.unsqueeze(0))
+                    crowd = output.detach().cpu().sum().numpy()
+                    print("------------counting------------------------")
+                    socketio.emit('my_response', {'count': int(crowd)}, room=self.data['id'], namespace='/camera')
+            
+    def stop(self):
+        with app.app_context():
+            self.isContinue = False
+    
+    def updateClientCount(self, num):
+        self.clientCount += num
+        
+@socketio.on('join', namespace='/camera')
+def join(data):
+    join_room(data['id'], namespace='/camera')
+    if not data['id'] in workers.keys():
+        workers[data['id']] = Worker(data)
+    workers[data['id']].updateClientCount(1)
+    if not data['id'] in thread.keys():
+        thread[data['id']] = socketio.start_background_task(workers[data['id']].doWork)
+
+@socketio.on('leave', namespace='/camera')
+def leave(data):
+    leave_room(data['id'], namespace='/camera')
+    workers[data['id']].updateClientCount(-1)
+    if workers[data['id']].clientCount <= 0:
+        workers[data['id']].stop()
+        del thread[data['id']]
+        del workers[data['id']]
+        
+
+@socketio.on('connect', namespace='/camera')
+def connect():
+    # global thread
+    # with thread_lock:
+    #     if thread is None:
+    #         thread = socketio.start_background_task(calculate_crowd_counting)
+    emit('my_response',
+          {'data': 'Connected', 'count': 0})
+    
+@socketio.on('disconnect_request', namespace='/camera')
+def disconnect_request():
+    @copy_current_request_context
+    def can_disconnect():
+        disconnect()
+
+    emit('my_response',
+         {'data': 'Disconnected!', 'count': 0},
+         callback=can_disconnect)
+
+# def crowdCounting(data):
+#     with app.app_context():
+#         # camera = cv2.VideoCapture(data['rtspAddress'])
+#         camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
+#         while True:
+#             socketio.sleep(5)
+#             success, frame = camera.read()
+#             if not success:
+#                 break
+#             else:
+#                 im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+#                 im = Image.fromarray(np.uint8(np.array(im)))
+#                 im = transform(im).cpu()
+#                 # im.save("C:\\Users\\Admin\\Desktop\\TA\\Dataset\\UCF-QNRF_ECCV18\\Test\\debug\\coba.jpg")
+#                 # calculate crowd count
+#                 output = model(im.unsqueeze(0))
+#                 crowd = output.detach().cpu().sum().numpy()
+#                 print("counting")
+#                 emit('my_response', {'count': int(crowd)}, room=data['id'])
+                
+# def calculate_crowd_counting(message):
+#     start = time.time()
+#     while True:
+#         socketio.sleep(3)
+#         # with app.app_context():
+#         #     socketio.emit('my_response', {'data': message['data'], 'count': session.get('receive_count', 0) }, namespace='/camera')
+#         with app.test_request_context('/'):
+#             socketio.emit('my_response', {'data': message['data'], 'count': 0 }, namespace='/camera', room=message['data'])
+#         # if (time.time() - start == 30):
+#         #     session['receive_count'] = session.get('receive_count', 0) + 1
+#         #     emit('my_response',
+#         #           {'data': 'Streaming', 'count': session['receive_count']})
+#         #     start = time.time()
+        
+#         # if (session.get('receive_count', 0) > 10):
+#         #     break
+        
+# @socketio.on('my_event', namespace='/camera')
+# def test_message(message):
+#     global thread
+#     join_room(message['data'])
+#     # with thread_lock:
+#     #     # print("masuk event")
+#     #     if thread is None:
+#     #         thread = socketio.start_background_task(calculate_crowd_counting(message))
+#     # thread_lock.acquire()
+#     if not message['data'] in thread.keys():
+#         thread[message['data']] = socketio.start_background_task(calculate_crowd_counting(message))
+#     # thread_lock.release()
+#     # session['receive_count'] = session.get('receive_count', 0) + 1
+#     # emit('my_response',
+#     #       {'data': message['data'], 'count': session['receive_count']})
+   
+# @socketio.on('my_broadcast_event', namespace='/camera')
+# def test_broadcast_message(message):
+#     emit('my_response',
+#          {'data': message['data'], 'count': 0},
+#          broadcast=True)

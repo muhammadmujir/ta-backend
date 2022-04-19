@@ -37,16 +37,8 @@ import numpy as np
 from datetime import datetime
 import functools
 from application import Application
+from crowd_counting.crowd_counting import *
 
-# init model
-model = InceptionResNetV2().cpu()
-checkpoint = torch.load("D:\\TA\\Dataset\\Result\\0model_best.pth.tar")
-model.load_state_dict(checkpoint['state_dict'])
-transform=transforms.Compose([
-                      transforms.ToTensor(),transforms.Normalize(
-                          mean=[0.485, 0.456, 0.406],
-                          std=[0.229, 0.224, 0.225]),
-                  ])
 app = Application().app
 scheduler = Application().scheduler
 
