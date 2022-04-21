@@ -4,7 +4,7 @@ Created on Mon Apr 18 23:27:17 2022
 
 @author: Admin
 """
-from flask import Blueprint
+from flask import Blueprint, request
 from application import Application
 from threading import Lock
 from flask import copy_current_request_context
@@ -15,6 +15,7 @@ import PIL.Image as Image
 import numpy as np
 from crowd_counting.crowd_counting import *
 from flask_socketio import rooms
+import json
 
 # socketio_bp = Blueprint('socket_bp', __name__)
 app = Application().app
@@ -34,8 +35,8 @@ class Worker(object):
         
     def doWork(self):
         with app.test_request_context('/'):
-            camera = cv2.VideoCapture(data['rtspAddress'])
-            # camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
+            # camera = cv2.VideoCapture(data['rtspAddress'])
+            camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
             while self.isContinue:
                 socketio.sleep(5)
                 success, frame = camera.read()
@@ -50,7 +51,7 @@ class Worker(object):
                     output = model(im.unsqueeze(0))
                     crowd = output.detach().cpu().sum().numpy()
                     print("------------counting------------------------")
-                    socketio.emit('my_response', {'count': int(crowd)}, room=self.data['id'], namespace='/camera')
+                    socketio.emit('my_response', {'count': int(crowd)}, room=str(self.data['id']), namespace='/camera')
             
     def stop(self):
         with app.app_context():
@@ -61,17 +62,26 @@ class Worker(object):
         
 @socketio.on('join', namespace='/camera')
 def join(data):
-    join_room(data['id'], namespace='/camera')
-    if not data['id'] in workers.keys():
-        workers[data['id']] = Worker(data)
-    workers[data['id']].updateClientCount(1)
-    if not data['id'] in thread.keys():
-        thread[data['id']] = socketio.start_background_task(workers[data['id']].doWork)
+    data = json.loads(data)
+    # ketika sudah terkonek ke websocket, secara default user masuk ke room yang isinya 
+    # hanya user itu sendiri. Hal, berguna untuk mengirim direct message
+    userNotInRoom = len(socketio.server.rooms(request.sid, namespace="/camera")) == 1
+    if userNotInRoom:
+        join_room(str(data['id']), namespace='/camera')
+        if not data['id'] in workers.keys():
+            workers[data['id']] = Worker(data)
+        workers[data['id']].updateClientCount(1)
+        if not data['id'] in thread.keys():
+            thread[data['id']] = socketio.start_background_task(workers[data['id']].doWork)
+    else:
+        print("sudah masuk room")
 
 @socketio.on('leave', namespace='/camera')
 def leave(data):
-    leave_room(data['id'], namespace='/camera')
+    data = json.loads(data)
+    leave_room(str(data['id']), namespace='/camera')
     workers[data['id']].updateClientCount(-1)
+    print("Count: "+str(workers[data['id']].clientCount))
     if workers[data['id']].clientCount <= 0:
         workers[data['id']].stop()
         del thread[data['id']]
@@ -84,8 +94,7 @@ def connect():
     # with thread_lock:
     #     if thread is None:
     #         thread = socketio.start_background_task(calculate_crowd_counting)
-    emit('my_response',
-          {'data': 'Connected', 'count': 0})
+    emit('connect_response', {'data': 'Connected'}, room=request.sid)
     
 @socketio.on('disconnect_request', namespace='/camera')
 def disconnect_request():
