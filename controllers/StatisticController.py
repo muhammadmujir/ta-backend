@@ -62,8 +62,8 @@ def getStatisticByTimestamp(token, cameraId):
     validateTimestamp(data['start'])
     validateTimestamp(data['end'])
     rows = Statistic.query\
-        .filter(Statistic.timestamp >= data['start'], Statistic.timestamp >= data['end'])\
-        .order_by(Statistic.timestamp.desc())\
+        .filter(Statistic.timestamp >= data['start'], Statistic.timestamp <= data['end'])\
+        .order_by(Statistic.timestamp.asc())\
         .all()
     # order_by(Statistic.timestamp.desc()) for desc
     return [s.serialize(exclude=['id', 'cameraId']) for s in rows]

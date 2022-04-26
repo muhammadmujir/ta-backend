@@ -15,6 +15,7 @@ class Statistic(db.Model):
     camera_id = db.Column(db.Integer, db.ForeignKey('cameras.id'))
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False)
     # Fri, 15 Apr 2022 22:00:00 GMT
+    # https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
     crowd_count = db.Column(db.Integer, nullable=False)
     
     def __init__(self, camera_id, timestamp, crowd_count):

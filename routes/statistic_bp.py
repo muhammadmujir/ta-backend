@@ -11,4 +11,4 @@ from utils.constant import BASE_URL
 
 statistic_bp = Blueprint('statistic_bp', __name__, url_prefix=BASE_URL+"/cameras")
 statistic_bp.route('/<cameraId>/statistics', methods=['POST'])(createStatistic)
-statistic_bp.route('/<cameraId>/statistics', methods=['GET'])(getStatisticByTimestamp)
+statistic_bp.route('/<cameraId>/_statistics', methods=['POST'])(getStatisticByTimestamp)
