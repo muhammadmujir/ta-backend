@@ -47,6 +47,11 @@ def updateUser(token):
     user = User.query.filter_by(id=token.userId).first()
     isUpdated = False
     data = request.get_json()
+    if 'email' in data:
+        if not validateEmail(data['email']):
+            raise BadRequest("Wrong email format")
+        user.email = data['email']
+        isUpdated = True
     if 'name' in data:
         user.name = data['name']
         isUpdated = True
@@ -70,14 +75,14 @@ def uploadUserPicture(token):
     if file.filename == '':
         raise BadRequest("No selected file")
     if file and allowedFile(file.filename):
+        removeExistingFile(UPLOAD_FOLDER_USER, token.userId)
         filename = str(token.userId)+"."+file.filename.rsplit('.', 1)[1]
         file.save(os.path.join(UPLOAD_FOLDER_USER, filename))
         return "Upload Success"
     raise BadRequest("File Extension Not Supported")
-
-
+        
 def getUserPicture(userId):
-    ext =  getFileExtension(cameraId)
+    ext =  getFileExtension(UPLOAD_FOLDER_USER, userId)
     return send_from_directory(UPLOAD_FOLDER_USER, str(userId)+"."+ext)    
 
 def delete(userId):

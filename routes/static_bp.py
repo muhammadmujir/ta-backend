@@ -14,4 +14,4 @@ static_bp = Blueprint('static_bp', __name__, url_prefix=BASE_URL+"/static/images
 static_bp.route('/cameras/<cameraId>', methods=['GET'])(getCameraPicture)
 static_bp.route('/cameras/<cameraId>', methods=['PUT'])(uploadCameraPicture)
 static_bp.route('/users/<userId>', methods=['GET'])(getUserPicture)
-static_bp.route('/users', methods=['PUT'])(uploadUserPicture)
+static_bp.route('/users/_currentUser', methods=['PUT'])(uploadUserPicture)

@@ -23,6 +23,11 @@ def getPicture(path, uniqueName):
 def allowedFile(filename, allowedExtendions = { 'png', 'jpg', 'jpeg' }):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowedExtendions
 
+def removeExistingFile(path, itemId):
+    ext = getFileExtension(path, itemId)
+    if ext != None:
+        os.remove(os.path.join(path, str(itemId)+"."+ext))
+        
 def getStrDateFromTimestamp(timeInMillis):
     dateTime = datetime.fromtimestamp(timeInMillis)
     return dateTime.strftime('%Y-%m-%d %H:%M:%S%z')

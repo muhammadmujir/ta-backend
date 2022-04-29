@@ -38,6 +38,7 @@ from datetime import datetime
 import functools
 from application import Application
 from crowd_counting.crowd_counting import *
+from utils.util import *
 
 app = Application().app
 scheduler = Application().scheduler
@@ -71,7 +72,7 @@ def schedule(cameraId, isAddJob = True):
     # scheduler.start()
     if isAddJob:
         if scheduler.get_job(cameraId) == None:
-            minute = random.random() * 59
+            minute = int(random.random() * 59)
             scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute=minute, id=cameraId, args=[cameraId])
     else:
         if scheduler.get_job(cameraId):
@@ -161,7 +162,7 @@ def deleteCamera(token, cameraId):
                 os.remove(os.path.join(UPLOAD_FOLDER_CAMERA, cameraId+"."+ext))
         else:
             raise BadRequest("Camera Not Found")
-        return "Delete Successfull"
+        return None
     else:
         raise Forbidden(description = "You Are Not Allowed To Delete Camera")
         
@@ -179,6 +180,7 @@ def uploadCameraPicture(token, cameraId):
         if file.filename == '':
             raise BadRequest("No selected file")
         if file and allowedFile(file.filename):
+            removeExistingFile(UPLOAD_FOLDER_CAMERA, cameraId)
             filename = str(cameraId)+"."+file.filename.rsplit('.', 1)[1]
             # filename = secure_filename(file.filename)
             file.save(os.path.join(UPLOAD_FOLDER_CAMERA, filename))
