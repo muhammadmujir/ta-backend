@@ -73,7 +73,7 @@ def schedule(cameraId, isAddJob = True):
     if isAddJob:
         if scheduler.get_job(cameraId) == None:
             minute = int(random.random() * 59)
-            scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute=minute, id=cameraId, args=[cameraId])
+            scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute=5, id=cameraId, args=[cameraId])
     else:
         if scheduler.get_job(cameraId):
             scheduler.remove_job(cameraId)
@@ -160,6 +160,7 @@ def deleteCamera(token, cameraId):
             ext = getFileExtension(cameraId)
             if ext != None:
                 os.remove(os.path.join(UPLOAD_FOLDER_CAMERA, cameraId+"."+ext))
+            schedule(cameraId, False)
         else:
             raise BadRequest("Camera Not Found")
         return None
@@ -225,6 +226,14 @@ def getOwnerCameraList(token):
         else:
             query = query.filter(Camera.is_public == False)
     return [row.serialize() for row in query.all()]
+
+@token_required
+@api_call
+def getAllCameraList(token):
+    if token.userRole == 1:
+        return [row.serialize() for row in Camera.query.all()]
+    else:
+        return [c.serialize(exclude=['isActive', 'isPublic']) for c in Camera.query.filter(Camera.is_active == True, Camera.is_public == True).all()]
 
 @token_required
 @api_call

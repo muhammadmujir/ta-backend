@@ -48,7 +48,7 @@ async_mode = None
 # thread = dict()
 # thread_lock = Lock()
 socketio = Application().socketio
-# Application().scheduler.start()
+Application().scheduler.start()
 
 # camera = cv2.VideoCapture(0)
 # if not camera.isOpened():

@@ -12,7 +12,7 @@ db = Database().db
 class Statistic(db.Model):
     __tablename__ = 'statistics'
     id = db.Column(db.Integer, primary_key=True)
-    camera_id = db.Column(db.Integer, db.ForeignKey('cameras.id'))
+    camera_id = db.Column(db.Integer, db.ForeignKey('cameras.id', onupdate="CASCADE", ondelete="CASCADE"))
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False)
     # Fri, 15 Apr 2022 22:00:00 GMT
     # https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
