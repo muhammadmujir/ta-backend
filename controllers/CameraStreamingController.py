@@ -16,6 +16,7 @@ import numpy as np
 from crowd_counting.crowd_counting import *
 from flask_socketio import rooms
 import json
+import time
 
 # socketio_bp = Blueprint('socket_bp', __name__)
 app = Application().app
@@ -36,22 +37,27 @@ class Worker(object):
     def doWork(self):
         with app.test_request_context('/'):
             # camera = cv2.VideoCapture(data['rtspAddress'])
-            camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
+            # camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
+            camera = cv2.VideoCapture("http://192.168.43.194:5001/video/1")
+            # i = 0
+            start = time.time()
             while self.isContinue:
-                socketio.sleep(5)
+                # socketio.sleep(5)
                 success, frame = camera.read()
                 if not success:
                     break
-                else:
+                elif time.time() - start >= 20:
+                    start = time.time()
                     im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     im = Image.fromarray(np.uint8(np.array(im)))
+                    # im.save("C:\\Users\\Admin\\Downloads\\Crowd\\{}.jpg".format(i))
                     im = transform(im).cpu()
-                    # im.save("C:\\Users\\Admin\\Desktop\\TA\\Dataset\\UCF-QNRF_ECCV18\\Test\\debug\\coba.jpg")
                     # calculate crowd count
                     output = model(im.unsqueeze(0))
                     crowd = output.detach().cpu().sum().numpy()
                     print("------------counting------------------------")
                     socketio.emit('my_response', {'count': int(crowd)}, room=str(self.data['id']), namespace='/camera')
+                    # i += 1
             
     def stop(self):
         with app.app_context():
@@ -63,6 +69,7 @@ class Worker(object):
 @socketio.on('join', namespace='/camera')
 def join(data):
     data = json.loads(data)
+    # data = {'id': 1}
     # ketika sudah terkonek ke websocket, secara default user masuk ke room yang isinya 
     # hanya user itu sendiri. Hal, berguna untuk mengirim direct message
     userNotInRoom = len(socketio.server.rooms(request.sid, namespace="/camera")) == 1
