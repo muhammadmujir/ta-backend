@@ -36,9 +36,9 @@ class Worker(object):
         
     def doWork(self):
         with app.test_request_context('/'):
-            camera = cv2.VideoCapture(data['rtspAddress'])
+            # camera = cv2.VideoCapture(self.data['rtspAddress'])
             # camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
-            # camera = cv2.VideoCapture("http://192.168.43.194:5001/video/1")
+            camera = cv2.VideoCapture("http://192.168.43.194:5001/video/1")
             # i = 0
             start = time.time()
             while self.isContinue:
@@ -55,6 +55,7 @@ class Worker(object):
                     # calculate crowd count
                     output = model(im.unsqueeze(0))
                     crowd = output.detach().cpu().sum().numpy()
+                    print("Crowd: ", crowd)
                     print("------------counting------------------------")
                     socketio.emit('my_response', {'count': int(crowd)}, room=str(self.data['id']), namespace='/camera')
                     # i += 1
@@ -68,8 +69,8 @@ class Worker(object):
         
 @socketio.on('join', namespace='/camera')
 def join(data):
-    data = json.loads(data)
-    # data = {'id': 1}
+    # data = json.loads(data)
+    data = {'id': 1}
     # ketika sudah terkonek ke websocket, secara default user masuk ke room yang isinya 
     # hanya user itu sendiri. Hal, berguna untuk mengirim direct message
     userNotInRoom = len(socketio.server.rooms(request.sid, namespace="/camera")) == 1
