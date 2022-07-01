@@ -9,7 +9,7 @@ from crowd_counting.inceptionresnetv2 import InceptionResNetV2
 import torch
 
 model = InceptionResNetV2().cpu()
-checkpoint = torch.load("C:\\Users\\Admin\\Desktop\\TA\\Dataset\\0model_best.pth.tar")
+checkpoint = torch.load("F:\\TA\\Dataset\\Result\\0model_best.pth.tar")
 model.load_state_dict(checkpoint['state_dict'])
 transform=transforms.Compose([
                       transforms.ToTensor(),transforms.Normalize(
