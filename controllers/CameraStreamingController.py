@@ -36,7 +36,7 @@ class Worker(object):
     def doWork(self):
         with app.test_request_context('/'):
             # camera = cv2.VideoCapture(data['rtspAddress'])
-            camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
+            camera = cv2.VideoCapture("F:\\Backup\\Downloads\\1.mp4")
             while self.isContinue:
                 socketio.sleep(5)
                 success, frame = camera.read()
