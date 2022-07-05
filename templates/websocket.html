@@ -28,11 +28,11 @@
                 return false;
             });
             $('form#join_form').submit(function(event) {
-                socket.emit('join', JSON.stringify({"id": $('#join_data').val()}));
+                socket.emit('join', JSON.stringify({"id": $('#join_data').val(), "rtspAddress": $('#rtsp_address').val()}));
                 return false;
             });
             $('form#leave_form').submit(function(event) {
-                socket.emit('leave', JSON.stringify({"id": $('#leave_data').val()}));
+                socket.emit('leave', JSON.stringify({"id": $('#leave_data').val(), "rtspAddress": ""}));
                 return false;
             });
             $('form#disconnect').submit(function(event) {
@@ -54,7 +54,8 @@
         <input type="submit" value="Send Broadcast Message">
     </form>
     <form id="join_form" method="POST" action='#'>
-        <input type="text" name="join_data" id="join_data" placeholder="Room">
+        <input type="text" name="join_data" id="join_data" placeholder="Camera Id">
+        <input type="text" name="rtsp_address" id="rtsp_address" placeholder="RTSP Address">
         <input type="submit" value="Join Room">
     </form>
     <form id="leave_form" method="POST" action='#'>
