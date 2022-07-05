@@ -48,6 +48,8 @@ async_mode = None
 # thread = dict()
 # thread_lock = Lock()
 socketio = Application().socketio
+# with this below script, it will re-run the saved job where previous job saved in db (check field 'job_state' in db) 
+# and if we creae new job, the job will be saved into db with status running (not pending)
 Application().scheduler.start()
 
 # camera = cv2.VideoCapture(0)
