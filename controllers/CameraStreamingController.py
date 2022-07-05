@@ -69,8 +69,7 @@ class Worker(object):
         
 @socketio.on('join', namespace='/camera')
 def join(data):
-    # data = json.loads(data)
-    data = {'id': 1}
+    data = json.loads(data)
     # ketika sudah terkonek ke websocket, secara default user masuk ke room yang isinya 
     # hanya user itu sendiri. Hal, berguna untuk mengirim direct message
     userNotInRoom = len(socketio.server.rooms(request.sid, namespace="/camera")) == 1
