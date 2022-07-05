@@ -36,9 +36,9 @@ class Worker(object):
         
     def doWork(self):
         with app.test_request_context('/'):
-            # camera = cv2.VideoCapture(self.data['rtspAddress'])
+            camera = cv2.VideoCapture(self.data['rtspAddress'])
             # camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
-            camera = cv2.VideoCapture("http://192.168.43.194:5001/video/1")
+            # camera = cv2.VideoCapture("http://192.168.43.194:5001/video/1")
             # i = 0
             start = time.time()
             while self.isContinue:
