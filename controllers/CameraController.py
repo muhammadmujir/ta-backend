@@ -61,6 +61,7 @@ def crowdCounting(cameraId):
                 # calculate crowd count
                 output = model(im.unsqueeze(0))
                 crowd = crowd + output.detach().cpu().sum().numpy()
+                print("crowd scheduler: ", crowd)
                 if i == iteration-1:
                     crowd = crowd / iteration
                     new_statistic = Statistic(cameraId, getCurrentStrDate(), crowd)
@@ -72,8 +73,8 @@ def schedule(cameraId, isAddJob = True):
     # scheduler.start()
     if isAddJob:
         if scheduler.get_job(cameraId) == None:
-            minute = int(random.random() * 59)
-            scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute=5, id=cameraId, args=[cameraId])
+            mnt = int(random.random() * 59)
+            scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute=mnt, id=cameraId, args=[cameraId])
     else:
         if scheduler.get_job(cameraId):
             scheduler.remove_job(cameraId)
