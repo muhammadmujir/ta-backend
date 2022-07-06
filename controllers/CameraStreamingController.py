@@ -17,6 +17,8 @@ from crowd_counting.crowd_counting import *
 from flask_socketio import rooms
 import json
 import time
+import base64, json
+from io import BytesIO
 
 # socketio_bp = Blueprint('socket_bp', __name__)
 app = Application().app
@@ -33,6 +35,7 @@ class Worker(object):
         self.isContinue = True
         self.data = data
         self.clientCount = 0
+        self.sleepTime = 20
         
     def doWork(self):
         with app.test_request_context('/'):
@@ -40,25 +43,42 @@ class Worker(object):
             # camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
             # camera = cv2.VideoCapture("http://192.168.43.194:5001/video/1")
             # i = 0
-            start = time.time()
+            totalFrame = int(camera.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = camera.get(cv2.CAP_PROP_FPS)
+            print("Total Frame: ", totalFrame)
+            print("FPS: ", fps)
+            currentFramePos = 0
             while self.isContinue:
-                # socketio.sleep(5)
+                start = time.time()
+                camera.set(cv2.CAP_PROP_POS_FRAMES, currentFramePos)
                 success, frame = camera.read()
                 if not success:
                     break
-                elif time.time() - start >= 20:
-                    start = time.time()
-                    im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    im = Image.fromarray(np.uint8(np.array(im)))
-                    # im.save("C:\\Users\\Admin\\Downloads\\Crowd\\{}.jpg".format(i))
-                    im = transform(im).cpu()
-                    # calculate crowd count
-                    output = model(im.unsqueeze(0))
-                    crowd = output.detach().cpu().sum().numpy()
-                    print("------------counting------------------------")
-                    print("Crowd: ", crowd)
-                    socketio.emit('my_response', {'count': int(crowd)}, room=str(self.data['id']), namespace='/camera')
-                    # i += 1
+                
+                im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                im = Image.fromarray(np.uint8(np.array(im)))
+                ori = im
+                # im.save("C:\\Users\\Mujir\\Downloads\\Crowd\\{}.jpg".format(i))
+                im = transform(im).cpu()
+                # calculate crowd count
+                output = model(im.unsqueeze(0))
+                crowd = output.detach().cpu().sum().numpy()
+                print("------------counting------------------------")
+                print("Crowd: ", crowd)
+                buffered = BytesIO()
+                ori.save(buffered, format="JPEG")
+                img_str = base64.b64encode(buffered.getvalue())
+                socketio.emit('my_response', {'count': int(crowd), 'image': str(img_str)[2:]}, room=str(self.data['id']), namespace='/camera')
+                # i += 1
+                
+                socketio.sleep(self.sleepTime)
+                intervalInSecond = int(time.time() - start)
+                print("Interval: ", intervalInSecond)
+                if currentFramePos + int(intervalInSecond * fps) < totalFrame:
+                    currentFramePos += int(intervalInSecond * fps)
+                else:
+                    currentFramePos += totalFrame - currentFramePos
+            camera.release()
             
     def stop(self):
         with app.app_context():

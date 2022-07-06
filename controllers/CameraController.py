@@ -49,7 +49,12 @@ def crowdCounting(cameraId):
         # camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
         crowd = 0
         iteration = 5
+        totalFrame = int(camera.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = camera.get(cv2.CAP_PROP_FPS)
+        currentFramePos = 0
         for i in range(iteration):
+            start = time.time()
+            camera.set(cv2.CAP_PROP_POS_FRAMES, currentFramePos)
             success, frame = camera.read()
             if not success:
                 break
@@ -62,11 +67,18 @@ def crowdCounting(cameraId):
                 output = model(im.unsqueeze(0))
                 crowd = crowd + output.detach().cpu().sum().numpy()
                 print("crowd scheduler: ", crowd)
+                intervalInSecond = int(time.time() - start)
+                if currentFramePos + int(intervalInSecond * fps) < totalFrame:
+                    currentFramePos += int(intervalInSecond * fps)
+                else:
+                    currentFramePos += totalFrame - currentFramePos
+                    
                 if i == iteration-1:
                     crowd = crowd / iteration
                     new_statistic = Statistic(cameraId, getCurrentStrDate(), crowd)
                     db.session.add(new_statistic)
                     db.session.commit()
+        camera.release()
         
 def schedule(cameraId, isAddJob = True):
     cameraId = str(cameraId)
