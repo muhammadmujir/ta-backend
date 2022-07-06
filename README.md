@@ -6,3 +6,6 @@
 # The migration script needs to be reviewed and edited, as Alembic currently does not detect every change you make to your models
 # 3. flask db upgrade --> apply the migration to the database
 # Each time the database models change repeat the migrate and upgrade commands. 
+
+# Package to install:
+# 1. conda install -c conda-forge eventlet

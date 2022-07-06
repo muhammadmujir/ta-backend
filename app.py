@@ -225,4 +225,5 @@ def handle_404_error(err):
 if __name__ == "__main__":
     # app.run(debug=True)
     from controllers.CameraStreamingController import *
-    socketio.run(app, ssl_context=None, host='192.168.43.194', debug=True)
+    # socketio.run(app, ssl_context=None, host='192.168.43.194', debug=True)
+    socketio.run(app, host='192.168.43.194', debug=False)
