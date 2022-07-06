@@ -55,8 +55,8 @@ class Worker(object):
                     # calculate crowd count
                     output = model(im.unsqueeze(0))
                     crowd = output.detach().cpu().sum().numpy()
-                    print("Crowd: ", crowd)
                     print("------------counting------------------------")
+                    print("Crowd: ", crowd)
                     socketio.emit('my_response', {'count': int(crowd)}, room=str(self.data['id']), namespace='/camera')
                     # i += 1
             
