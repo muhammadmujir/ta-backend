@@ -19,7 +19,7 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 JSON_SORT_KEYS = False
 # JWT
 SECRET_KEY = '004f2af45d3a4e161a7dd2d17fdae47f'
-UPLOAD_FOLDER = 'C:\\Users\\Admin\\TA\\ta-backend\\static\\images\\'
+UPLOAD_FOLDER = 'E:\\ta_project\\source\\images\\'
 UPLOAD_FOLDER_CAMERA = UPLOAD_FOLDER+"camera"
 UPLOAD_FOLDER_USER = UPLOAD_FOLDER+"user"
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024 # 16 MB

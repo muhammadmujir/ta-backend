@@ -225,7 +225,8 @@ def getOwnerCameraList(token):
     active = request.args.get('active')
     public = request.args.get('public')
     query = Camera.query\
-        .join(CameraOwner, Camera.id == CameraOwner.camera_id)
+        .join(CameraOwner, Camera.id == CameraOwner.camera_id)\
+        .filter(CameraOwner.user_id == token.userId)
     if (active != None):
         active = active.lower().strip()
         if (active == 'true'):
