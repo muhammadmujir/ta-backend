@@ -30,9 +30,12 @@ import time
 from flask_socketio import SocketIO, emit, disconnect, join_room, leave_room
 from threading import Lock
 from application import Application
+import argparse
 
 #Initialize the Flask app
 # app = Flask(__name__)
+parser = argparse.ArgumentParser(description='Crowd App')
+parser.add_argument('--debug', action='store_true', help='enable debug mode')
 app = Application().app
 app.config.from_object('config')
 app.register_blueprint(user_bp)
@@ -227,5 +230,6 @@ def handle_404_error(err):
 if __name__ == "__main__":
     # app.run(debug=True)
     from controllers.CameraStreamingController import *
+    args = parser.parse_args()
     # socketio.run(app, ssl_context=None, host='192.168.43.194', debug=True)
-    socketio.run(app, host='192.168.43.194', debug=False)
+    socketio.run(app, host='192.168.43.194', debug=args.debug)
