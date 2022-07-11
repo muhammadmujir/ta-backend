@@ -15,7 +15,7 @@
             });
 
             socket.on('my_response', function(msg, cb) {
-                $('#log').append('<br>' + $('<div/>').text('logs #' + msg.count + ': ' + msg.image).html());
+                $('#log').append('<br>' + $('<div/>').text('logs #' + msg.count + ': ' + msg.time).html());
                 if (cb)
                     cb();
             });
