@@ -22,7 +22,15 @@ def handle_exception(err):
         response = {"code": 500, "status": "Internal Server Error", "data": None, "errors": None}
     if len(err.args) > 0:
         response["errors"] = err.args
-    return jsonify(response), err.code if hasattr(err, 'code') else 500
+        arg = str(err.args[0])
+        if arg.find("psycopg2.errors.UniqueViolation") != -1:
+            keyStr = "Key ("
+            start = arg.find(keyStr)
+            if start != -1:
+                end = arg.find(")=(")
+                if end != -1:
+                    response["errors"] = ["{} already exists".format(arg[start+len(keyStr):end])]
+    return jsonify(response), 500
 
 @exception_bp.app_errorhandler(HTTPException)
 def handle_http_exception(err):
