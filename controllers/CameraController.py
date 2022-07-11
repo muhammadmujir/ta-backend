@@ -48,7 +48,7 @@ def crowdCounting(cameraId):
         camera = cv2.VideoCapture(Camera.query.filter_by(id=cameraId).first().rtsp_address)
         # camera = cv2.VideoCapture("C:\\Users\\Admin\\Downloads\\videoplayback (1).mp4")
         crowd = 0
-        iteration = 5
+        iteration = 2
         totalFrame = int(camera.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = camera.get(cv2.CAP_PROP_FPS)
         currentFramePos = 0
