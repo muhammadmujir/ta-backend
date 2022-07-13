@@ -36,6 +36,10 @@ import argparse
 # app = Flask(__name__)
 parser = argparse.ArgumentParser(description='Crowd App')
 parser.add_argument('--debug', action='store_true', help='enable debug mode')
+parser.add_argument('host', metavar='HOST', help='ip address of server')
+parser.add_argument('gpu',metavar='GPU', type=str, help='GPU id to use.')
+# parser.add_argument('--pre', '-p', metavar='PRETRAINED', default=None,type=str, help='path to the pretrained model')
+
 app = Application().app
 app.config.from_object('config')
 app.register_blueprint(user_bp)
