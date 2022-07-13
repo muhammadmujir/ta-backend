@@ -5,17 +5,16 @@ Created on Wed Mar  9 21:01:08 2022
 @author: Admin
 """
 
-import sys
-from flask import render_template, redirect, url_for, request, abort, jsonify, make_response
-from flask_sqlalchemy import SQLAlchemy
+from flask import request, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+
 from models.user import User, db
 from jwt_token import token_required
 from responses.api_call import api_call
-from werkzeug.security import generate_password_hash, check_password_hash
 from config import SECRET_KEY, UPLOAD_FOLDER_USER
-import jwt
 from datetime import datetime, timedelta
-from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized
+from werkzeug.exceptions import BadRequest, Unauthorized
 from utils.validation import validateEmpty, validateEmail
 from utils.util import *
 

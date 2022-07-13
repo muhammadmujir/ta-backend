@@ -7,19 +7,13 @@ Created on Fri Oct  1 10:32:19 2021
 
 #importing libraries
 import h5py
-import scipy.io as io
 import PIL.Image as Image
 import numpy as np
 import os
 import glob
 from matplotlib import pyplot as plt
-from scipy.ndimage.filters import gaussian_filter
-import scipy
-import json
-import torchvision.transforms.functional as F
-from matplotlib import cm as CM
 import torch
-from torchvision import datasets, transforms
+from torchvision import transforms
 from tqdm import tqdm
 from crowd_counting.inceptionresnetv2 import InceptionResNetV2
 
@@ -31,17 +25,17 @@ transform=transforms.Compose([
 isCudaAvailable = False
 
 #defining the location of dataset
-#root = 'C:\\Users\\Admin\\Desktop\\Kuliah\\TA\\ShanghaiTech\\'
-root = BASE_PATH
+# root = 'C:\\Users\\Admin\\Desktop\\Kuliah\\TA\\ShanghaiTech\\'
+# root = BASE_PATH
 # part_A_train = os.path.join(root,'part_A\\train_data','images')
 # part_A_test = os.path.join(root,'part_A\\test_data','images')
 # part_B_train = os.path.join(root,'part_B\\train_data','images')
 # part_B_test = os.path.join(root,'part_B\\test_data','images')
-part_A_train = os.path.join(root,DATASET1_TRAIN_A)
-part_A_test = os.path.join(root,DATASET1_TEST_A)
-part_B_train = os.path.join(root,DATASET1_TRAIN_B)
-part_B_test = os.path.join(root,DATASET1_TEST_B)
-path_sets = [part_A_test]
+# part_A_train = os.path.join(root,DATASET1_TRAIN_A)
+# part_A_test = os.path.join(root,DATASET1_TEST_A)
+# part_B_train = os.path.join(root,DATASET1_TRAIN_B)
+# part_B_test = os.path.join(root,DATASET1_TEST_B)
+path_sets = []
 
 #defining the image path
 img_paths = []

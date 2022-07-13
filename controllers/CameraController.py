@@ -5,40 +5,29 @@ Created on Wed Mar  9 21:01:08 2022
 @author: Admin
 """
 
-import sys
 import os
 import glob
-from flask import render_template, redirect, url_for, request, abort, jsonify, make_response, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
-from models.user import User, db
+import random
+import time
+
+import cv2
+import PIL.Image as Image
+import numpy as np
+from flask import request, send_from_directory
+from werkzeug.exceptions import BadRequest, Forbidden
+from apscheduler.schedulers.background import BackgroundScheduler
+
+from models.user import db
 from models.camera import Camera
 from models.camera_owner import CameraOwner
 from models.statistic import Statistic
-from jwt_token import token_required
-from responses.api_call import api_call
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
-from config import SECRET_KEY, UPLOAD_FOLDER_CAMERA, SQLALCHEMY_DATABASE_URI
-import jwt
-import datetime
-from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized, Forbidden
-from utils.validation import validateEmpty, validateEmail, validateMissingJsonField
-from utils.util import getCurrentStrDate
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-import random
-from torchvision import datasets, transforms
-from crowd_counting.inceptionresnetv2 import InceptionResNetV2
-import cv2
-import torch
-import time
-import PIL.Image as Image
-import numpy as np
-from datetime import datetime
-import functools
+from utils.validation import validateEmpty, validateMissingJsonField
+from utils.util import getCurrentStrDate, removeExistingFile
 from application import Application
 from crowd_counting.crowd_counting import *
-from utils.util import *
+from jwt_token import token_required
+from responses.api_call import api_call
+from config import UPLOAD_FOLDER_CAMERA
 
 app = Application().app
 scheduler = Application().scheduler

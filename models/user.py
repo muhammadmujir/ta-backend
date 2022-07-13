@@ -6,7 +6,6 @@ Created on Wed Mar  9 20:57:58 2022
 """
 from sqlalchemy.orm import relationship
 from database import Database
-from models.camera_owner import CameraOwner
 
 db = Database().db
 

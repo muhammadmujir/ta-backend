@@ -2,14 +2,12 @@
 Created on Mon Apr 18 12:21:35 2022
 @author: Admin
 """
-
-from singleton import Singleton
-from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
+from flask_socketio import SocketIO
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from config import SQLALCHEMY_DATABASE_URI
-from flask_socketio import SocketIO, emit, disconnect, join_room, leave_room
+from singleton import Singleton
 
 class Application(metaclass=Singleton):
     def __init__(self):

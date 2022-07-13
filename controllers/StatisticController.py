@@ -4,25 +4,15 @@ Created on Mon Apr 11 14:44:55 2022
 
 @author: Admin
 """
-
-import sys
-import os
-import glob
-from flask import render_template, redirect, url_for, request, abort, jsonify, make_response, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
-from models.user import User, db
+from flask import request
+from werkzeug.exceptions import BadRequest, Forbidden
+from utils.validation import validateEmpty, validateMissingJsonField, validateTimestamp
+from models.user import db
 from models.camera import Camera
 from models.camera_owner import CameraOwner
 from models.statistic import Statistic
 from jwt_token import token_required
 from responses.api_call import api_call
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
-from config import SECRET_KEY, UPLOAD_FOLDER
-import jwt
-import datetime
-from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized, Forbidden
-from utils.validation import validateEmpty, validateMissingJsonField, validateTimestamp
 
 @token_required
 @api_call

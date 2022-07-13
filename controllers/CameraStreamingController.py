@@ -4,21 +4,19 @@ Created on Mon Apr 18 23:27:17 2022
 
 @author: Admin
 """
-from flask import Blueprint, request
-from application import Application
-from threading import Lock
-from flask import copy_current_request_context
-from flask_socketio import emit, disconnect, join_room, leave_room
 import time
+from threading import Lock
+from flask import request, copy_current_request_context
+from flask_socketio import emit, disconnect, join_room, leave_room
 import cv2
 import PIL.Image as Image
 import numpy as np
-from crowd_counting.crowd_counting import *
-from flask_socketio import rooms
 import json
-import time
-import base64, json
+import base64
 from io import BytesIO
+
+from crowd_counting.crowd_counting import *
+from application import Application
 
 # socketio_bp = Blueprint('socket_bp', __name__)
 app = Application().app

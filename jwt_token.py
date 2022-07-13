@@ -4,12 +4,11 @@ Created on Fri Mar 11 17:21:16 2022
 
 @author: Admin
 """
-from flask import Flask, request, jsonify
-from models.user import User
+from flask import request
 from functools import wraps
+from werkzeug.exceptions import Unauthorized
 import jwt
 from config import SECRET_KEY
-from werkzeug.exceptions import Unauthorized
 
 class TokenContent():
     def __init__(self, userId, userRole):

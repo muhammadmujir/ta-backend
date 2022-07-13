@@ -6,31 +6,21 @@ Created on Wed Oct  6 20:35:23 2021
 """
 
 #Import necessary libraries
-from flask import Flask, render_template, Response, request, jsonify, session, copy_current_request_context
-from multiprocessing import Process
-import cv2
-import torch
-from torchvision import datasets, transforms
-from crowd_counting.inceptionresnetv2 import InceptionResNetV2
+import argparse
+from flask import render_template, request, jsonify
+from flask_migrate import Migrate
+
 from routes.user_bp import user_bp
 from routes.camera_bp import camera_bp
 from routes.static_bp import static_bp
 from routes.statistic_bp import statistic_bp
-from database import Database
-from flask_migrate import Migrate
+from responses.exceptions.exception import exception_bp
 from models.user import User
 from models.camera import Camera
 from models.camera_owner import CameraOwner
 from models.statistic import Statistic
-from responses.exceptions.exception import exception_bp
-import numpy as np
-import PIL.Image as Image
-from matplotlib import cm
-import time
-from flask_socketio import SocketIO, emit, disconnect, join_room, leave_room
-from threading import Lock
 from application import Application
-import argparse
+from database import Database
 
 #Initialize the Flask app
 # app = Flask(__name__)

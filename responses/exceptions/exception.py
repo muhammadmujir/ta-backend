@@ -5,8 +5,7 @@ Created on Tue Mar 15 09:09:14 2022
 @author: Admin
 """
 from flask import jsonify
-from singleton import Singleton
-from werkzeug.exceptions import HTTPException, BadRequest
+from werkzeug.exceptions import HTTPException
 from .error_response import error_response
 from flask import Blueprint
 

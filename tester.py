@@ -8,20 +8,12 @@ Created on Fri Jan 14 14:39:40 2022
 # prediction on single image
 # ====================================================================
 import h5py
-import scipy.io as io
 import PIL.Image as Image
 import numpy as np
-import os
-import glob
 from matplotlib import pyplot as plt
-from scipy.ndimage.filters import gaussian_filter
-import scipy
-import json
-import torchvision.transforms.functional as F
 from matplotlib import cm as c
 import torch
-from torchvision import datasets, transforms
-from tqdm import tqdm
+from torchvision import transforms
 from model.inceptionresnetv2 import InceptionResNetV2
 
 model = InceptionResNetV2()
