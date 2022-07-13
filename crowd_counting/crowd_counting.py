@@ -5,7 +5,7 @@ Created on Tue Apr 19 01:08:45 2022
 @author: Admin
 """
 from torchvision import datasets, transforms
-from crowd_counting.inceptionresnetv2 import InceptionResNetV2
+# from crowd_counting.inceptionresnetv2 import InceptionResNetV2
 from crowd_counting.vgg16_inception import CSRNet
 import torch
 

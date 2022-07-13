@@ -236,5 +236,5 @@ if __name__ == "__main__":
     from controllers.CameraStreamingController import *
     args = parser.parse_args()
     # socketio.run(app, ssl_context=None, host='192.168.43.194', debug=True)
-    socketio.run(app, host='192.168.43.194', debug=args.debug)
+    socketio.run(app, host=str(args.host), debug=args.debug)
     # socketio.run(app, host='192.168.1.78', debug=args.debug)
