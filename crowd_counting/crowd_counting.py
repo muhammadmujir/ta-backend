@@ -10,10 +10,7 @@ from crowd_counting.vgg16_inception import CSRNet
 import torch
 
 # model = InceptionResNetV2().cpu()
-model = CSRNet(load_weights=True).cpu()
-# checkpoint = torch.load("C:\\Users\\Admin\\Desktop\\TA\\Dataset\\0model_best.pth.tar")
-checkpoint = torch.load("F:\\Backup\\TA\\Model\\model_best_partB.pth.tar", map_location=torch.device('cpu'))
-model.load_state_dict(checkpoint['state_dict'])
+model = CSRNet(load_weights=True)
 transform=transforms.Compose([
                       transforms.ToTensor(),transforms.Normalize(
                           mean=[0.485, 0.456, 0.406],

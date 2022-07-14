@@ -6,7 +6,9 @@ Created on Wed Oct  6 20:35:23 2021
 """
 
 #Import necessary libraries
+import os
 import argparse
+import torch
 from flask import render_template, request, jsonify
 from flask_migrate import Migrate
 
@@ -20,6 +22,7 @@ from models.camera import Camera
 from models.camera_owner import CameraOwner
 from models.statistic import Statistic
 from application import Application
+from crowd_counting.crowd_counting import model
 from database import Database
 
 #Initialize the Flask app
@@ -28,7 +31,7 @@ parser = argparse.ArgumentParser(description='Crowd App')
 parser.add_argument('--debug', action='store_true', help='enable debug mode')
 parser.add_argument('host', metavar='HOST', help='ip address of server')
 parser.add_argument('gpu',metavar='GPU', type=str, help='GPU id to use.')
-# parser.add_argument('--pre', '-p', metavar='PRETRAINED', default=None,type=str, help='path to the pretrained model')
+parser.add_argument('--pre', '-p', metavar='PRETRAINED', default=None,type=str, help='path to the pretrained model')
 
 app = Application().app
 app.config.from_object('config')
@@ -221,10 +224,27 @@ def handle_404_error(err):
 #     schedule(request.args.get('job'), operation)
 #     return 'Schedule Success'
 
+def getCheckpoint(path, isCuda=True):
+    if path == None:
+        path = "F:\\Backup\\TA\\Model\\model_best_partB.pth.tar"
+    if os.path.isfile(path):
+        if isCuda:
+            return torch.load(path)
+        return torch.load(path, map_location=torch.device('cpu'))
+            
 if __name__ == "__main__":
     # app.run(debug=True)
     from controllers.CameraStreamingController import *
     args = parser.parse_args()
+    checkpoint = args.pre if args.pre != None else "F:\\Backup\\TA\\Model\\model_best_partB.pth.tar"
+    if args.gpu != 'None':
+        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+        model = model.cuda()
+        model.load_state_dict(getCheckpoint(checkpoint)['state_dict'])
+    else:
+        model = model.cpu()
+        model.load_state_dict(getCheckpoint(checkpoint, False)['state_dict'])
+    
     # socketio.run(app, ssl_context=None, host='192.168.43.194', debug=True)
-    socketio.run(app, host=str(args.host), debug=args.debug)
     # socketio.run(app, host='192.168.1.78', debug=args.debug)
+    socketio.run(app, host=args.host, debug=args.debug)
