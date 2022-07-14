@@ -74,8 +74,12 @@ def schedule(cameraId, isAddJob = True):
     # scheduler.start()
     if isAddJob:
         if scheduler.get_job(cameraId) == None:
-            mnt = int(random.random() * 59)
-            scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute=mnt, id=cameraId, args=[cameraId])
+            # mnt = int(random.random() * 59)
+            delay = int(random.random() * 120)
+            if random.random() < 0.5:
+                delay = -1 * delay
+            # scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute=mnt, id=cameraId, args=[cameraId])
+            scheduler.add_job(crowdCounting, 'interval', minutes=5, jitter=delay, id=cameraId, args=[cameraId])
     else:
         if scheduler.get_job(cameraId):
             scheduler.remove_job(cameraId)
