@@ -79,7 +79,7 @@ def schedule(cameraId, isAddJob = True):
             if random.random() < 0.5:
                 delay = -1 * delay
             # scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute=mnt, id=cameraId, args=[cameraId])
-            scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute='*/5', jitter=delay, timezone='GMT+07:00', id=cameraId, args=[cameraId])
+            scheduler.add_job(crowdCounting, 'cron', hour='6-23', minute='*/5', jitter=delay, timezone='Asia/Jakarta', id=cameraId, args=[cameraId])
     else:
         if scheduler.get_job(cameraId):
             scheduler.remove_job(cameraId)
