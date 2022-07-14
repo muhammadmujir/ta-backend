@@ -33,7 +33,7 @@ class Worker(object):
         self.isContinue = True
         self.data = data
         self.clientCount = 0
-        self.sleepTime = 10
+        self.sleepTime = 2
         
     def doWork(self):
         with app.test_request_context('/'):
