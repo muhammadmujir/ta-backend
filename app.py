@@ -244,7 +244,7 @@ if __name__ == "__main__":
     else:
         model = model.cpu()
         model.load_state_dict(getCheckpoint(checkpoint, False)['state_dict'])
-    
+    model.eval()
     # socketio.run(app, ssl_context=None, host='192.168.43.194', debug=True)
     # socketio.run(app, host='192.168.1.78', debug=args.debug)
     socketio.run(app, host=args.host, debug=args.debug)
