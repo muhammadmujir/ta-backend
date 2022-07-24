@@ -67,4 +67,4 @@ def kafkaproducer(message):
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='crowd.eastus2.cloudapp.azure.com', port=80)
+    socketio.run(app, host='10.0.0.4', port=5000)
