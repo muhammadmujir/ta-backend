@@ -17,7 +17,7 @@ cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # BOOTSTRAP_SERVERS = 'kafka:9092'
-BOOTSTRAP_SERVERS = 'crowd.eastus2.cloudapp.azure.com:9092'
+BOOTSTRAP_SERVERS = '10.0.0.4:9092'
 TOPIC_NAME = 'stackbox'
 
 
