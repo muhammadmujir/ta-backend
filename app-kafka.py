@@ -5,7 +5,7 @@ Created on Sun Jul 24 14:08:48 2022
 @author: Mujir
 """
 
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, render_template
 from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO, emit
 from kafka import KafkaProducer, KafkaConsumer, TopicPartition
@@ -24,7 +24,7 @@ TOPIC_NAME = 'stackbox'
 @app.route('/')
 @cross_origin()
 def home():
-    return send_from_directory('/templates', "index-kafka.html")
+    return render_template('index-kafka.html')
 
 """ Kafka endpoints """
 
