@@ -63,10 +63,11 @@ class Worker(object):
                 crowd = output.detach().cpu().sum().numpy()
                 print("------------counting------------------------")
                 print("Crowd: ", crowd)
-                buffered = BytesIO()
-                ori.save(buffered, format="JPEG")
-                img_str = base64.b64encode(buffered.getvalue())
-                socketio.emit('my_response', {'time': int(time.time()), 'count': int(crowd), 'image': str(img_str)[2:]}, room=str(self.data['id']), namespace='/camera')
+                # buffered = BytesIO()
+                # ori.save(buffered, format="JPEG")
+                # img_str = base64.b64encode(buffered.getvalue())
+                # socketio.emit('my_response', {'time': int(time.time()), 'count': int(crowd), 'image': str(img_str)[2:]}, room=str(self.data['id']), namespace='/camera')
+                socketio.emit('my_response', {'time': int(time.time()), 'count': int(crowd), 'image': "" }, room=str(self.data['id']), namespace='/camera')
                 # i += 1
                 
                 socketio.sleep(self.sleepTime)
